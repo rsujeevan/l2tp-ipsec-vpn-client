@@ -19,4 +19,47 @@ sleep 3
 
 # startup xl2tpd ppp daemon then send it a connect command
 (sleep 7 && echo "c myVPN" > /var/run/xl2tpd/l2tp-control) &
-exec /usr/sbin/xl2tpd -p /var/run/xl2tpd.pid -c /etc/xl2tpd/xl2tpd.conf -C /var/run/xl2tpd/l2tp-control -D
+/usr/sbin/xl2tpd -p /var/run/xl2tpd.pid -c /etc/xl2tpd/xl2tpd.conf -C /var/run/xl2tpd/l2tp-control -D &
+
+TUNNEL_NAME="${VPN_TUNEL_NAME-ppp0}"
+
+is_ppp_up() {
+    ip ad show ${TUNNEL_NAME} 2>&1 | grep -q "inet "
+}
+
+get_vpn_ip() {
+    ip add show ${TUNNEL_NAME} | grep "inet " | sed 's/^[ ]*//' | cut -f2 -d' '
+}
+
+route_traffic() {
+    VPN_GATEWAY="$(get_vpn_ip)"
+    echo "Routing ${1} via ${VPN_GATEWAY} on tunnel ${TUNNEL_NAME}"
+    ip route add ${1} via ${VPN_GATEWAY} dev ${TUNNEL_NAME}
+}
+
+TIMEOUT=${VPN_TIMEOUT-6}
+i=0
+# Until ppp0 is up with an IP or timeout expires
+while ! is_ppp_up && [ $i -le ${TIMEOUT} ]; do
+  sleep 1
+  ((i=i+1))
+done
+
+$VPN_MAX_ROUTE=${VPN_MAX_ROUTE-5}
+
+if is_ppp_up; then
+    # ppp is up
+    for varindex in $(seq 1 $VPN_MAX_ROUTE)
+    do
+        varname="VPN_TUNNEL_ROUTE_NETWORK_$varindex"
+        NETWORK=$(eval echo \$${varname})
+        if [ ! -z "${NETWORK}" ]; then
+            route_traffic ${NETWORK}
+        fi
+    done
+else
+    echo "Error: ${TUNNEL_NAME} is not up"
+fi
+
+echo "waiting for xl2tpd to exit"
+wait $(cat /var/run/xl2tpd.pid)
