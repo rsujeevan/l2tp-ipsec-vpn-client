@@ -45,7 +45,7 @@ while ! is_ppp_up && [ $i -le ${TIMEOUT} ]; do
   ((i=i+1))
 done
 
-$VPN_MAX_ROUTE=${VPN_MAX_ROUTE-5}
+VPN_MAX_ROUTE="${VPN_MAX_ROUTE-5}"
 
 if is_ppp_up; then
     # ppp is up
