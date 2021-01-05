@@ -22,7 +22,9 @@ Setup environment variables for your credentials and config:
     export VPN_PSK='my pre shared key'
     export VPN_USERNAME='myuser@myhost.com'
     export VPN_PASSWORD='mypass'
-
+    export VPN_PASSWORD='mypass'
+    VPN_TUNNEL_ROUTE_NETWORK_1=10.10.10.0/24  # automatically add a route to forward all traffic for 10.10.10.0/24 network via VPN
+    
 Now run it (you can daemonize of course after debugging):
 
     docker run --rm -it --privileged --net=host \
@@ -31,7 +33,8 @@ Now run it (you can daemonize of course after debugging):
                -e VPN_PSK \
                -e VPN_USERNAME \
                -e VPN_PASSWORD \
-                  ubergarm/l2tp-ipsec-vpn-client
+               -e VPN_TUNNEL_ROUTE_NETWORK_1 \
+                  sjnet/l2tp-ipsec-vpn-client
 
 ## Route
 From the host machine configure traffic to route through VPN link:
@@ -62,22 +65,8 @@ pluto[17]: No XFRM/NETKEY kernel interface detected
 pluto[17]: seccomp security for crypto helper not supported
 ```
 
-## Strongswan
-The previous `strongswan` based version of this docker image is still available on docker hub here:
-```bash
-docker pull ubergarm/l2tp-ipsec-vpn-client:strongswan
-```
-
-## TODO
-- [x] `ipsec` connection works
-- [x] `xl2tpd` ppp0 device creates
-- [x] Can forward traffic through tunnel from host
-- [x] Pass in credentials as environment variables
-- [x] Dynamically template out the default config files with `sed` on start
-- [x] Update to use `libreswan` instead of `strongswan`
-- [ ] See if this can work without privileged and net=host modes to be more portable
-
 ## References
+* [Original Repo](https://github.com/ubergarm/l2tp-ipsec-vpn-client)
 * [royhills/ike-scan](https://github.com/royhills/ike-scan)
 * [libreswan reference config](https://libreswan.org/wiki/VPN_server_for_remote_clients_using_IKEv1_with_L2TP)
 * [Useful Config Example](https://lists.libreswan.org/pipermail/swan/2016/001921.html)
