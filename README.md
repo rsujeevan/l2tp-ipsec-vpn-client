@@ -23,7 +23,7 @@ Setup environment variables for your credentials and config:
     export VPN_USERNAME='myuser@myhost.com'
     export VPN_PASSWORD='mypass'
     export VPN_PASSWORD='mypass'
-    VPN_TUNNEL_ROUTE_NETWORK_1=10.10.10.0/24  # automatically add a route to forward all traffic for 10.10.10.0/24 network via VPN
+    export VPN_TUNNEL_ROUTE_NETWORK_1=10.10.10.0/24  # automatically add a route to forward all traffic for 10.10.10.0/24 network via VPN
     
 Now run it (you can daemonize of course after debugging):
 
@@ -52,10 +52,6 @@ From the host machine configure traffic to route through VPN link:
     # when your done add your normal routes and delete the VPN routes
     # or just `docker stop` and you'll probably be okay
 
-## Test
-You can see if your IP address changes after adding appropriate routes e.g.:
-
-    curl icanhazip.com
 
 ## Debugging
 On your VPN client localhost machine you may need to `sudo modprobe af_key`
